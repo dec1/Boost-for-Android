@@ -679,6 +679,7 @@ EOF
         threading=multi \
         target-os=android \
         binary-format=elf \
+        cxxstd=14 \
         address-model=$BJAMADDRMODEL \
         architecture=$BJAMARCH \
         abi=$BJAMABI \
