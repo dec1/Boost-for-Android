@@ -3,7 +3,7 @@
 import os ;
 local ndk_dir_env = [ os.environ NDK_DIR ] ;
 
-local ndk_bin_dir = $(ndk_dir_env)/toolchains/llvm/prebuilt/linux-x86_64/bin ;
+local ndk_bin_dir = $(ndk_dir_env)/toolchains/llvm/prebuilt/darwin-x86_64/bin ;
 
 
 # --------------------------------------------------------------------

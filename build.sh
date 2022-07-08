@@ -12,28 +12,28 @@ export PATH=$(pwd)/bin:$SAVED_PATH
 
 
 BUILD_DIR=$(pwd)/build
-mkdir --parents ${BUILD_DIR}
+echo "BUILD_DIR==>$BUILD_DIR"
+mkdir -p "${BUILD_DIR}"
 
 
 BUILD_DIR_TMP=${BUILD_DIR}/tmp
-
 PREFIX_DIR=${BUILD_DIR}/install
-mkdir --parents ${PREFIX_DIR}
+mkdir -p "${PREFIX_DIR}"
  
 LIBS_DIR=${PREFIX_DIR}/libs
 INCLUDE_DIR=${PREFIX_DIR}/include
 
 WITHOUT_LIBRARIES=--without-python
 
-# only build these libs
-# WITH_LIBRARIES="--with-chrono --with-system"
+# only build these libs, "--with-chrono --with-system"
+#WITH_LIBRARIES="--with-system"
 
 
 LOG_FILE=${BUILD_DIR}/build.log
 #empty logFile 
 if [ -f "$LOG_FILE" ]  
 then 
-    rm $LOG_FILE
+    rm "$LOG_FILE"
 fi          
     
 
@@ -43,10 +43,7 @@ fi
 #----------------------------------------------------------------------------------
 # map ABI to toolset name (following "using clang :") used in user-config.jam
 toolset_for_abi_name() {
-
-
     local abi_name=$1
-    
     case "$abi_name" in
         arm64-v8a)      echo "arm64v8a"
         ;;
@@ -56,15 +53,12 @@ toolset_for_abi_name() {
         ;;
         x86_64)         echo "x8664"
         ;;
-        
     esac
 }
 #----------------------------------------------------------------------------------
-# map abi to {NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/*-clang++
+# map abi to {NDK_DIR}/toolchains/llvm/prebuilt/darwin-x86_64/bin/*-clang++
 clang_triple_for_abi_name() {
-
     local abi_name=$1
-    
     case "$abi_name" in
         arm64-v8a)      echo "aarch64-linux-android21"
         ;;
@@ -74,16 +68,12 @@ clang_triple_for_abi_name() {
         ;;
         x86_64)         echo "x86_64-linux-android21"
         ;;
-        
     esac
-    
 }
 #----------------------------------------------------------------------------------
-# map abi to {NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/*-ranlib etc
+# map abi to {NDK_DIR}/toolchains/llvm/prebuilt/darwin-x86_64/bin/*-ranlib etc
 tool_triple_for_abi_name() {
-
     local abi_name=$1
-
     case "$abi_name" in
         arm64-v8a)      echo "aarch64-linux-android"
         ;;
@@ -93,16 +83,11 @@ tool_triple_for_abi_name() {
         ;;
         x86_64)         echo "x86_64-linux-android"
         ;;
-        
     esac
-    
 }
 #----------------------------------------------------------------------------------
 abi_for_abi_name() {
-
-
     local abi_name=$1
-    
     case "$abi_name" in
         arm64-v8a)      echo "aapcs"
         ;;
@@ -112,15 +97,11 @@ abi_for_abi_name() {
         ;;
         x86_64)         echo "sysv"
         ;;
-        
     esac
-    
 }
 #----------------------------------------------------------------------------------
 arch_for_abi_name() {
-
     local abi_name=$1
-    
     case "$abi_name" in
         arm64-v8a)      echo "arm"
         ;;
@@ -130,16 +111,12 @@ arch_for_abi_name() {
         ;;
         x86_64)         echo "x86"
         ;;
-        
     esac
-    
 }
 
 #----------------------------------------------------------------------------------
 address_model_for_abi_name() {
-
     local abi_name=$1
-    
     case "$abi_name" in
         arm64-v8a)      echo "64"
         ;;
@@ -149,15 +126,11 @@ address_model_for_abi_name() {
         ;;
         x86_64)         echo "64"
         ;;
-        
     esac
-    
 }
 #----------------------------------------------
 compiler_flags_for_abi_name() {
-
     local abi_name=$1
-    
     COMMON_FLAGS="" #-fno-integrated-as -Wno-long-long"
     local ABI_FLAGS
     case "$abi_name" in
@@ -170,14 +143,11 @@ compiler_flags_for_abi_name() {
             echo "ERROR: Unknown ABI : $ABI" 1>&2
             exit 1
     esac
-    
     echo "$COMMON_FLAGS $ABI_FLAGS"
 }  
 #----------------------------------------------
 linker_flags_for_abi_name() {
-
     local abi_name=$1
-    
     COMMON_FLAGS=""
     local ABI_FLAGS
     case "$abi_name" in
@@ -190,7 +160,6 @@ linker_flags_for_abi_name() {
             echo "ERROR: Unknown ABI : $ABI" 1>&2
             exit 1
     esac
-    
     echo "$COMMON_FLAGS $ABI_FLAGS"
 }   
 #----------------------------------------------------------------------------------
@@ -300,7 +269,11 @@ fi
 
 # use as many cores as available (for build)
 num_cores=$(grep -c ^processor /proc/cpuinfo)
-echo " cores available = " $num_cores 
+echo " cores available = " $num_cores
+if [ -z $num_cores ]; then
+    # fallback for my mac
+    num_cores=4
+fi
 
 
 
