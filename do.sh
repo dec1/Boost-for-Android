@@ -12,7 +12,7 @@
 #----------------------------------------------------------------
 
 # Specify the path to boost source code dir 
-export BOOST_DIR=/Users/bytedance/workspace/android/_video/reportSDK/report/deps/boost_1_68_0
+export BOOST_DIR=~/workspace/android/_video/reportSDK/report/deps/boost_1_68_0
 
 
 # Where the Android Ndk you want to build with is located
