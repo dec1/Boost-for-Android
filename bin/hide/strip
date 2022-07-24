@@ -1,5 +1,5 @@
 #!/bin/sh
 
 echo "in strip....${BFA_TOOL_TRIPLE_FOR_ABI}" 
-exec ${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/${BFA_TOOL_TRIPLE_FOR_ABI}-strip "$@"
+exec ${NDK_DIR}/toolchains/llvm/prebuilt/darwin-x86_64/bin/${BFA_TOOL_TRIPLE_FOR_ABI}-strip "$@"
 

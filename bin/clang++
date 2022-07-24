@@ -5,4 +5,4 @@
 # include common base
 . `dirname $0`/base_clang++
 
-run ${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64/bin/${BFA_CLANG_TRIPLE_FOR_ABI}-clang++ $PARAMS
+run ${NDK_DIR}/toolchains/llvm/prebuilt/darwin-x86_64/bin/${BFA_CLANG_TRIPLE_FOR_ABI}-clang++ $PARAMS
