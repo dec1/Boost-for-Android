@@ -343,6 +343,13 @@ for LINKAGE in $LINKAGES; do
         export BFA_TOOL_TRIPLE_FOR_ABI="$(tool_triple_for_abi_name $ABI_NAME)"
         export BFA_COMPILER_FLAGS_FOR_ABI="$(compiler_flags_for_abi_name $ABI_NAME)"
         export BFA_LINKER_FLAGS_FOR_ABI="$(linker_flags_for_abi_name $ABI_NAME)"
+		
+		#Export bzip2source for boost build if present
+		if [ ! -z "$BZIP2_SOURCES_PATH" ]; 
+		then
+			echo "Exporting bzip source for boost build"
+			export BZIP2_SOURCE=$BZIP2_SOURCES_PATH
+		fi
         
         echo "------------------------------------------------------------"| tee -a ${LOG_FILE}
         echo "Building boost for: $ABI_NAME $LINKAGE on host ${HOST_OS_TAG}" | tee -a ${LOG_FILE}
@@ -377,6 +384,7 @@ for LINKAGE in $LINKAGES; do
                 abi=$abi    \
                 link=$LINKAGE                  \
                 threading=multi              \
+				visibility=$BOOST_LIB_VISIBILITY \
                 target-os=android           \
                 --user-config=$USER_CONFIG_FILE \
                 --ignore-site-config         \
