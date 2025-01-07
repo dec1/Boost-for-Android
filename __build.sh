@@ -219,52 +219,46 @@ persist_ndk_version()
     
 
 }
-
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 fix_version_suffices() {
-# 1) remove files that are symbolic links
-# 2)  remove version suffix (remaining) in:
-#   a) file names
-#   b) "soname" of the elf header
+    # 1) remove files that are symbolic links
+    # 2) remove version suffix (remaining) in:
+    #    a) file names
+    #    b) "soname" of the elf header
 
     Re0="^libboost_(.*)\.so"
     Re1="(\.[[:digit:]]+){3}$"
 
     for DIR_NAME in $ABI_NAMES; do
-        DIR_PATH=$LIBS_DIR/$DIR_NAME
-      #  echo ""
-       # echo "DIR_PATH = " $DIR_PATH
-        FILE_NAMES=$(ls $DIR_PATH)
+        DIR_PATH="$LIBS_DIR/$DIR_NAME"
+        FILE_NAMES=$(find "$DIR_PATH" -type f)
 
         # echo "$FILE_NAMES"
         # echo ""
         # echo "should delete:"
         # echo "--------------"
         for FILE_NAME in $FILE_NAMES; do
-            File=$(echo $FILE_NAME |  grep -Ev  ${Re0}${Re1})
-        #     echo "checking file " $File
-            if [ ! -z "$File" ]  && ! [[ $File == cmake* ]] && ! [[ $File == *.a ]]
-            then
-                rm $DIR_PATH/$File
+            File=$(echo "$FILE_NAME" | grep -Ev "${Re0}${Re1}")
+            # echo "checking file " $File
+            if [ ! -z "$File" ] && ! [[ $File == cmake* ]] && ! [[ $File == *.a ]]; then
+                rm "$DIR_PATH/$File"
             fi
         done
 
         #echo ""
         #echo "should NOT delete:"
         for FILE_NAME in $FILE_NAMES; do
-            File=$(echo $FILE_NAME |  grep -E  ${Re0}${Re1})
-            if [ ! -z "$File" ]
-            then
-                NEW_NAME=$(echo $FILE_NAME | grep -Eo "^libboost_[^.]+\.so")
-        #       echo $File " ->" $NEW_NAME
-                mv $DIR_PATH/$File $DIR_PATH/$NEW_NAME
+            File=$(echo "$FILE_NAME" | grep -E "${Re0}${Re1}")
+            if [ ! -z "$File" ]; then
+                NEW_NAME=$(echo "$FILE_NAME" | grep -Eo "^libboost_[^.]+\.so")
+                # echo $File " ->" $NEW_NAME
+                mv "$DIR_PATH/$File" "$DIR_PATH/$NEW_NAME"
                 # patchelf --set-soname $NEW_NAME $DIR_PATH/$NEW_NAME
             fi
         done
-    
-
-
+    done
+}
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 
