@@ -221,11 +221,12 @@ persist_ndk_version()
 }
 
 #----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
 fix_version_suffices() {
 # 1) remove files that are symbolic links
-# 2)  remove version suffix on (remaining):
+# 2)  remove version suffix (remaining) in:
 #   a) file names
-#   b) in the "soname" of the elf header
+#   b) "soname" of the elf header
 
     Re0="^libboost_(.*)\.so"
     Re1="(\.[[:digit:]]+){3}$"
@@ -235,25 +236,33 @@ fix_version_suffices() {
       #  echo ""
        # echo "DIR_PATH = " $DIR_PATH
         FILE_NAMES=$(ls $DIR_PATH)
+
+        # echo "$FILE_NAMES"
+        # echo ""
+        # echo "should delete:"
+        # echo "--------------"
         for FILE_NAME in $FILE_NAMES; do
             File=$(echo $FILE_NAME |  grep -Ev  ${Re0}${Re1})
+        #     echo "checking file " $File
             if [ ! -z "$File" ]  && ! [[ $File == cmake* ]] && ! [[ $File == *.a ]]
             then
                 rm $DIR_PATH/$File
             fi
         done
 
+        #echo ""
+        #echo "should NOT delete:"
         for FILE_NAME in $FILE_NAMES; do
             File=$(echo $FILE_NAME |  grep -E  ${Re0}${Re1})
             if [ ! -z "$File" ]
             then
                 NEW_NAME=$(echo $FILE_NAME | grep -Eo "^libboost_[^.]+\.so")
+        #       echo $File " ->" $NEW_NAME
                 mv $DIR_PATH/$File $DIR_PATH/$NEW_NAME
                 # patchelf --set-soname $NEW_NAME $DIR_PATH/$NEW_NAME
             fi
         done
-    done
-}
+    
 
 
 #----------------------------------------------------------------------------------
@@ -287,7 +296,8 @@ for LINKAGE in $LINKAGES; do
 
     for ABI_NAME in $ABI_NAMES; do
     
-        # log file
+
+        #-------------------
         LOG_FILE=${BUILD_DIR}/build_${ABI_NAME}_${LINKAGE}.log
         # clear any existing
         if [ -f "$LOG_FILE" ]  
@@ -295,16 +305,14 @@ for LINKAGE in $LINKAGES; do
             rm "$LOG_FILE"
         fi 
 
-        # abi specific b2 flags
-        SPECIAL_FLAGS=""
+        # ------------------
+        ABI_SPECIFIC_FLAGS=""
         if [ "$ABI_NAME" = "x86" ]; then
-
             # avoid possible memory leaks on x86
-            SPECIAL_FLAGS+=" boost.stacktrace.from_exception=off"
-        # elif [ "$ABI_NAME" = "armeabi-v7a" ]; then
-            # SPECIAL_FLAGS+=" --without-process"  
-
+            ABI_SPECIFIC_FLAGS+=" boost.stacktrace.from_exception=off"
         fi
+
+        # ------------------
 
         # toolset_name="$(toolset_for_abi_name $ABI_NAME)"
         abi="$(abi_for_abi_name $ABI_NAME)"
@@ -328,7 +336,7 @@ for LINKAGE in $LINKAGES; do
 
         # echo "WITH_LIBRARIES = $WITH_LIBRARIES"         | tee -a ${LOG_FILE} 
         # echo "WITHOUT_LIBRARIES = $WITHOUT_LIBRARIES"   | tee -a ${LOG_FILE} 
-        # echo "SPECIAL_FLAGS = $SPECIAL_FLAGS"           | tee -a ${LOG_FILE}
+        # echo "ABI_SPECIFIC_FLAGS = $ABI_SPECIFIC_FLAGS"           | tee -a ${LOG_FILE}
 
         # echo "--builddir=${BUILD_DIR_TMP}/$ABI_NAME "  | tee -a ${LOG_FILE}
         # echo "--includedir=${INCLUDE_DIR}"              | tee -a ${LOG_FILE}
@@ -357,7 +365,7 @@ for LINKAGE in $LINKAGES; do
                 --layout=system           \
                 $WITH_LIBRARIES           \
                 $WITHOUT_LIBRARIES           \
-                $SPECIAL_FLAGS \
+                $ABI_SPECIFIC_FLAGS \
                 --build-dir=${BUILD_DIR_TMP}/$ABI_NAME/$LINKAGE \
                 --includedir=${INCLUDE_DIR} \
                 --libdir=${LIBS_DIR}/$ABI_NAME/$LINKAGE \
