@@ -23,19 +23,12 @@ mkdir -p ${PREFIX_DIR}
 LIBS_DIR=${PREFIX_DIR}/libs
 INCLUDE_DIR=${PREFIX_DIR}/include
 
-WITHOUT_LIBRARIES=--without-python
+WITHOUT_LIBRARIES="--without-python"
+WITHOUT_LIBRARIES+=" --without-process"     # avoid:  "libs/process/src/shell.cpp:23:10: fatal error: 'wordexp.h' file not found" 
+                                            # 'process' control very restriced in  android sandboxes anyways
 
 # only build these libs
 # WITH_LIBRARIES="--with-chrono --with-system"
-
-
-LOG_FILE=${BUILD_DIR}/build.log
-#empty logFile 
-if [ -f "$LOG_FILE" ]  
-then 
-    rm "$LOG_FILE"
-fi          
-    
 
 #---------------------------------------------------
 host_os_tag() {
@@ -229,55 +222,36 @@ persist_ndk_version()
 
 #----------------------------------------------------------------------------------
 fix_version_suffices() {
-
-# 1) remove files that are symbolic links 
+# 1) remove files that are symbolic links
 # 2)  remove version suffix on (remaining):
-#   a) file names and 
+#   a) file names
 #   b) in the "soname" of the elf header
- 
 
     Re0="^libboost_(.*)\.so"
-    Re1="(.[[:digit:]]+){3}$" 
-    #Re1="(.[0-9]+){3}$"
+    Re1="(\.[[:digit:]]+){3}$"
 
-    #echo "+++++++++++++++++++++++++++"
     for DIR_NAME in $ABI_NAMES; do
-    
         DIR_PATH=$LIBS_DIR/$DIR_NAME
       #  echo ""
        # echo "DIR_PATH = " $DIR_PATH
         FILE_NAMES=$(ls $DIR_PATH)
-       # echo "$FILE_NAMES"
-        
-       # echo ""
-       # echo "should delete:"
-       # echo "--------------"
         for FILE_NAME in $FILE_NAMES; do
-            File=$(echo $FILE_NAME |  grep -Pv  ${Re0}${Re1})
-       #     echo "checking file " $Del_File
+            File=$(echo $FILE_NAME |  grep -Ev  ${Re0}${Re1})
             if [ ! -z "$File" ]  && ! [[ $File == cmake* ]] && ! [[ $File == *.a ]]
-            then 
-       #         echo $File
+            then
                 rm $DIR_PATH/$File
-                
-            fi    
-        done    
-        
-        #echo ""
-        #echo "should NOT delete:"
-        #echo "------------------"
+            fi
+        done
+
         for FILE_NAME in $FILE_NAMES; do
-            File=$(echo $FILE_NAME |  grep -P  ${Re0}${Re1})
-            
-            if [ ! -z "$File" ] 
-            then 
-                NEW_NAME=$(echo $FILE_NAME | grep -Po ${Re0}"(?="${Re1}")")
-            # echo $File " ->" $NEW_NAME
+            File=$(echo $FILE_NAME |  grep -E  ${Re0}${Re1})
+            if [ ! -z "$File" ]
+            then
+                NEW_NAME=$(echo $FILE_NAME | grep -Eo "^libboost_[^.]+\.so")
                 mv $DIR_PATH/$File $DIR_PATH/$NEW_NAME
                 # patchelf --set-soname $NEW_NAME $DIR_PATH/$NEW_NAME
-            fi 
-            
-        done 
+            fi
+        done
     done
 }
 
@@ -313,6 +287,25 @@ for LINKAGE in $LINKAGES; do
 
     for ABI_NAME in $ABI_NAMES; do
     
+        # log file
+        LOG_FILE=${BUILD_DIR}/build_${ABI_NAME}_${LINKAGE}.log
+        # clear any existing
+        if [ -f "$LOG_FILE" ]  
+        then 
+            rm "$LOG_FILE"
+        fi 
+
+        # abi specific b2 flags
+        SPECIAL_FLAGS=""
+        if [ "$ABI_NAME" = "x86" ]; then
+
+            # avoid possible memory leaks on x86
+            SPECIAL_FLAGS+=" boost.stacktrace.from_exception=off"
+        # elif [ "$ABI_NAME" = "armeabi-v7a" ]; then
+            # SPECIAL_FLAGS+=" --without-process"  
+
+        fi
+
         # toolset_name="$(toolset_for_abi_name $ABI_NAME)"
         abi="$(abi_for_abi_name $ABI_NAME)"
         address_model="$(address_model_for_abi_name $ABI_NAME)"
@@ -332,10 +325,11 @@ for LINKAGE in $LINKAGES; do
         # echo "abi=$abi "                                | tee -a ${LOG_FILE}   
         # echo "link=$LINKAGE  "                          | tee -a ${LOG_FILE}  
         # echo "--user-config=$USER_CONFIG_FILE"          | tee -a ${LOG_FILE}
-        
+
         # echo "WITH_LIBRARIES = $WITH_LIBRARIES"         | tee -a ${LOG_FILE} 
         # echo "WITHOUT_LIBRARIES = $WITHOUT_LIBRARIES"   | tee -a ${LOG_FILE} 
-    
+        # echo "SPECIAL_FLAGS = $SPECIAL_FLAGS"           | tee -a ${LOG_FILE}
+
         # echo "--builddir=${BUILD_DIR_TMP}/$ABI_NAME "  | tee -a ${LOG_FILE}
         # echo "--includedir=${INCLUDE_DIR}"              | tee -a ${LOG_FILE}
         # echo "--libdir=${LIBS_DIR}/$ABI_NAME"           | tee -a ${LOG_FILE}
@@ -363,6 +357,7 @@ for LINKAGE in $LINKAGES; do
                 --layout=system           \
                 $WITH_LIBRARIES           \
                 $WITHOUT_LIBRARIES           \
+                $SPECIAL_FLAGS \
                 --build-dir=${BUILD_DIR_TMP}/$ABI_NAME/$LINKAGE \
                 --includedir=${INCLUDE_DIR} \
                 --libdir=${LIBS_DIR}/$ABI_NAME/$LINKAGE \
