@@ -8,7 +8,7 @@
 #----------------------------------------------------------------
 
 # Specify the path to boost (unzipped) source code dir 
-export BOOST_DIR=$(pwd)/down/boost/1.87.0
+export BOOST_DIR=$(pwd)/boost/down/1.87.0
 
 
 # Where the Android Ndk you want to build with is located
