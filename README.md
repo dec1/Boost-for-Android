@@ -4,15 +4,13 @@ Build and/or simply download the Boost C++ Libraries for the Android platform, w
 The [Boost C++ Libraries](http://www.boost.org/), are possibly *the* most popular and generally useful c++ libraries. It would be nice to be able to use them when developing (native c++ or hybrid java/c++ with Google's [Ndk](https://developer.android.com/ndk/)) apps and/or libraries for Android devices.
 The Boost libraries are written to be cross platform, and are available in source code format. However, building the libraries for a given target platform like Android can be very difficult and time consuming. (In particular, building **arm64_v8a** shared libraries that an application can actually load). This project aims to lower the barrier by offering a simple customizable build script you can use to build Boost for Android (abstracting away all the details of the underlying custom boost build system, and target architecture differences), and even providing standard prebuilt binaries to get you started fast.
 
-Tested with **Boost 1.83.0** and **Google's Ndk 26b**  (LTS).
+Tested with **Boost 1.87.0** and **Google's Ndk 27c**  (LTS).
 
-You can build directly on a Linux or MacOS machine, or indirectly on any of Linux, Windows, MacOS via [docker](https://www.docker.com) (or of course virtual machines and wsl). _No matter what OS you use to build with, the resulting binaries can then be copied to any other, and used from then on as if you had built them there to start with (theyre cross compiled *for* android and have no memory of *where* they were built_).
+You can build directly on a Linux or MacOS machine, or indirectly on any of Linux, Windows, MacOS via [docker](https://www.docker.com) (or of course virtual machines and wsl). _No matter what OS you use to build with, the resulting binaries can then be copied to any other, and used from then on as if you had built them there to start with (they're cross compiled *for* android and have no memory of *where* they were built_).
 
 
 Creates binaries for multiple abis (**armeabi-v7a**, **arm64-v8a**, **x86**, **x86_64**).
 
-
-Tested on a development machine running **Ubuntu 20.04** and **MacOS 11.6.5**
 
 ## Prebuilt
 You can just download a current set of standard prebuilt binaries [here](https://github.com/dec1/Boost-for-Android/releases) if you don't need to customize the build, or don't have access to a unix-like development machine. 
@@ -28,26 +26,24 @@ See [docker_readme](./docker/docker_readme.md) for instructions.
 
 ### Build directly on your Linux or MacOS machine
 
-* For prerequisites see [Dockerflile](./docker/droid_base#L18) (even though the remaining instructions below don't use docker)
-* Download the [boost source](https://www.boost.org) and extract to a directory of the form *..../major.minor.patch* 
-  eg */home/declan/Documents/zone/mid/lib/boost/1.83.0* 
-  *__Note__:* After the extarction *..../boost/1.83.0* should then be the direct parent dir of "bootstrap.sh", "boost-build.jam" etc
+- Prerequisites
+    - Linux: see [Dockerflile](./docker/droid_base#L18) 
+    - MacOS: XCode ( Command Line Tools))
+    - NDK (eg in Android studio or downloaded separately)
+- Download the [boost source](https://www.boost.org) and [extract here](./boost/down/readme.md) 
 
 
-```
-> ls /home/declan/Documents/zone/mid/lib/boost/1.83.0
-boost  boost-build.jam  boostcpp.jam  boost.css  boost.png  ....
-``` 
 
-* Clone this repo:
+- Clone this repo:
+    - `git clone https://github.com/dec1/Boost-for-Android.git`
 
-```
-> git clone https://github.com/dec1/Boost-for-Android.git ./boost_for_android
-``` 
+* Modify the paths (where the ndk is) and variables (which abis you want to build for) in _do.sh_ as you wish, and execute 
+    - `cd Boost-for-Android`
+    -  `./do.sh`
 
+ If the build succeeded, then the boost binaries should now be in  **`./build/install`**
 
-* Modify the paths (where the ndk is) and variables (which abis you want to build for) in *do.sh*, and execute it. If the build succeeds then the boost binaries should then be available in the dir *boost_for_android/build*
-Note: If you download the ndk directly do *not* extract it with [Ark](https://apps.kde.org/de/ark). It produces a corrupt extraction, that results in strange compiler errors. (use unzip instead)
+Warning: If you download the ndk directly do *not* extract it with [Ark](https://apps.kde.org/de/ark). It produces a corrupt extraction, that results in strange compiler errors. (use unzip instead)
 ```
 > cd boost_for_android
 > ./do.sh
@@ -63,7 +59,7 @@ Note: If you download the ndk directly do *not* extract it with [Ark](https://ap
 Also included is a [test app](./example_app/) which can be opened by Android Studio. If you build and run this app it should show the date and time as calculated by boost *chrono*  (indicating that you have built, linked to and called the boost library correctly), as well as the ndk version used to build the boost library.
 To use the test app make sure to adjust the values in the [local.properties](./example_app/local.properties) file.
 
-*Note:* The test app uses [CMake for Android](https://developer.android.com/ndk/guides/cmake)
+*Note:* The test app uses [CMake for Android](https://developer.android.com/ndk/guides/cmake) and [Kotlin](https://developer.android.com/kotlin)
 
 
 ## *Header-only* Boost Libraries
@@ -74,7 +70,7 @@ want to use these. To see which of the libraries do require building you can swi
 > ./bootstrap.sh --show-libraries 
 ```
 
-which for example with boost 1.83.0 produces the output:
+which for example with boost 1.87.0 produces the output:
 
 ```
 The following Boost libraries have portions that require a separate build
@@ -82,45 +78,100 @@ and installation step. Any library not listed here can be used by including
 the headers only.
 
 The Boost libraries requiring separate building and installation are:
-    - atomic
-    - chrono
-    - container
-    - context
     - contract
-    - coroutine
     - date_time
     - exception
-    - fiber
-    - filesystem
     - graph
     - graph_parallel
     - headers
-    - iostreams
-    - json
     - locale
     - log
-    - math
-    - mpi
     - nowide
     - program_options
-    - python
-    - random
     - regex
     - serialization
-    - stacktrace
-    - system
     - test
     - thread
-    - timer
     - type_erasure
-    - url
+    - winapi
     - wave
+    - variant2
+    - variant
+    - uuid
+    - url
+    - unordered
+    - type_index
+    - tuple
+    - timer
+    - throw_exception
+    - system
+    - stl_interfaces
+    - stacktrace
+    - smart_ptr
+    - signals2
+    - scope
+    - redis
+    - ratio
+    - random
+    - python
+    - process
+    - predef
+    - poly_collection
+    - pfr
+    - parameter
+    - outcome
+    - optional
+    - mysql
+    - multi_index
+    - msm
+    - mpi
+    - mp11
+    - move
+    - math
+    - lockfree
+    - lexical_cast
+    - lambda2
+    - json
+    - iterator
+    - iostreams
+    - intrusive
+    - interprocess
+    - integer
+    - heap
+    - hana
+    - geometry
+    - function_types
+    - function
+    - flyweight
+    - filesystem
+    - fiber
+    - endian
+    - dll
+    - detail
+    - describe
+    - crc
+    - coroutine2
+    - coroutine
+    - core
+    - conversion
+    - context
+    - container_hash
+    - container
+    - compat
+    - cobalt
+    - chrono
+    - charconv
+    - bind
+    - bimap
+    - beast
+    - atomic
+    - assert
+    - asio
+    - any
 
 ```
-## Crystax
-[Crystax](https://www.crystax.net/) is an alternative to Google's Ndk. It ships with prebuilt boost binaries, and dedicated build scripts.
-These binaries will however not work with Goolge's Ndk. If for some reason you can't or don't want to use Crystax then you can't use their boost binaries or build scripts, which is why this project exists.
+
 
 ## Contributions
-- Many thanks to [crystax](https://github.com/crystax/android-platform-ndk/tree/master/build/tools) for their version of *build-boost.sh* which I adapted to make it work with the google ndk.
+- Many thanks to [crystax](https://github.com/crystax/android-platform-ndk/tree/master/build/tools) for their version of _build-boost.sh which I adapted to make it work with the google ndk.
 
