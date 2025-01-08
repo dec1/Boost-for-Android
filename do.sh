@@ -1,7 +1,4 @@
-# Author: Declan Moran 
-
-
-
+#!/bin/bash
 
 #----------------------------------------------------------------
 # Modify the variables below as appropriate for your local setup.

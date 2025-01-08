@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # see here for info on "new paths for toolchains":
 # https://developer.android.com/ndk/guides/other_build_systems
@@ -191,34 +192,69 @@ linker_flags_for_abi_name() {
     
     echo "$COMMON_FLAGS $ABI_FLAGS"
 }   
+
 #----------------------------------------------------------------------------------
-# write the ndk version to a header file for future reference and programmatic querying
+#----------------------------------------------------------------------------------
 persist_ndk_version()
 {
-    # get the version string from the "Pkg.Revision" attribute in the $ANDROID_NDK_ROOT"/source.properties" file
-    # and write this to a new header file (beside include/boost/version.hpp which documents the boost version)
-    local source_properties=${NDK_DIR}/source.properties
-    
-    local dir_path=${PREFIX_DIR}/include/boost
-    mkdir -p $dir_path
-    local headerFile=${dir_path}/version_ndk.hpp
-    
-   
-   local version=$(sed -En -e 's/^Pkg.Revision\s*=\s*([0-9a-f]+)/\1/p' $source_properties)
-    
-   
-   echo "writing NDK version $version to $headerFile "
-    
-   echo '#ifndef BOOST_VERSION_NDK_HPP'  > $headerFile
-   echo '#define BOOST_VERSION_NDK_HPP' >> $headerFile
+    # Define the path to the source properties file
+    local source_properties="${NDK_DIR}/source.properties"
 
-   echo -e '\n//The version of the NDK used to build boost' >>  $headerFile
-   echo -e " #define BOOST_BUILT_WITH_NDK_VERSION  \"$version\" \\n" >>$headerFile
-   
-   echo '#endif' >>$headerFile
+    # Read the file contents into a variable while stripping carriage returns
+    local file_contents="$(cat "$source_properties" | tr -d '\r')"
     
+    # Define the output directory and header file
+    local dir_path="${PREFIX_DIR}/include/boost"
+    mkdir -p "$dir_path"
+    local headerFile="${dir_path}/version_ndk.hpp"
+    
+    # Check if source.properties file exists
+    if [[ ! -f "$source_properties" ]]; then
+        echo "Error: $source_properties does not exist!"
+        return 1
+    fi
 
+    # echo  "$source_properties contains:"
+    # cat $source_properties
+    # Read Pkg.ReleaseName (remove leading/trailing spaces, handle \r for carriage returns)
+    local release_name="$(grep -m1 '^Pkg\.ReleaseName[[:space:]]*=' "$source_properties" \
+                            | tr -d '\r' \
+                            | cut -d= -f2 \
+                            | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+                        )"
+
+    
+    # Read Pkg.BaseRevision (remove leading/trailing spaces, handle \r for carriage returns)
+    local base_revision="$(grep -m1 '^Pkg\.BaseRevision[[:space:]]*=' "$source_properties" \
+                            | tr -d '\r' \
+                            | cut -d= -f2 \
+                            | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+                        )"
+
+    # Check if the variables are empty
+    if [[ -z "$release_name" || -z "$base_revision" ]]; then
+        echo "Error: Failed to read values from $source_properties"
+        return 1
+    fi
+
+    # Concatenate ReleaseName and BaseRevision into ndk_ver
+    local ndk_ver="${release_name} (${base_revision})"
+    
+    # Print the version to verify
+    echo "NDK Version: $ndk_ver"
+    
+    # Write to the header file
+    echo "writing NDK version $ndk_ver to $headerFile"
+    
+    # Create the header file with the NDK version information
+    echo '#ifndef BOOST_VERSION_NDK_HPP' > "$headerFile"
+    echo '#define BOOST_VERSION_NDK_HPP' >> "$headerFile"
+    echo -e "\n// The version of the NDK used to build boost" >> "$headerFile"
+    echo -e " #define BOOST_BUILT_WITH_NDK_VERSION  \"$ndk_ver\" \\n" >> "$headerFile"
+    echo '#endif' >> "$headerFile"
 }
+
+
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 fix_version_suffices() {
@@ -261,122 +297,125 @@ fix_version_suffices() {
 }
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+do_build() 
+{
+
+    USER_CONFIG_FILE=$(pwd)/user-config.jam
+
+    cd $BOOST_DIR
+
+    #-------------------------------------------
+    # Bootstrap
+    # ---------
+    if [ ! -f ${BOOST_DIR}/b2 ]
+    then
+    echo "Performing boost bootstrap"
+
+    ./bootstrap.sh # 2>&1 | tee -a bootstrap.log
+    fi
+    
+    #-------------------------------------------  
+
+    # use as many cores as available (for build)
+    num_cores=$(num_cpu_cores)
+    echo " cores available = " $num_cores 
 
 
-USER_CONFIG_FILE=$(pwd)/user-config.jam
 
-cd $BOOST_DIR
+    #------------------------------------------- 
+    for LINKAGE in $LINKAGES; do
 
-#-------------------------------------------
-# Bootstrap
-# ---------
-if [ ! -f ${BOOST_DIR}/b2 ]
-then
-  echo "Performing boost bootstrap"
+        for ABI_NAME in $ABI_NAMES; do
+        
 
-  ./bootstrap.sh # 2>&1 | tee -a bootstrap.log
-fi
-  
-#-------------------------------------------  
+            #-------------------
+            LOG_FILE=${BUILD_DIR}/build_${ABI_NAME}_${LINKAGE}.log
+            # clear any existing
+            if [ -f "$LOG_FILE" ]  
+            then 
+                rm "$LOG_FILE"
+            fi 
 
-# use as many cores as available (for build)
-num_cores=$(num_cpu_cores)
-echo " cores available = " $num_cores 
+            # ------------------
+            ABI_SPECIFIC_FLAGS=""
+            if [ "$ABI_NAME" = "x86" ]; then
+                # avoid possible memory leaks on x86
+                ABI_SPECIFIC_FLAGS+=" boost.stacktrace.from_exception=off"
+            fi
 
+            # ------------------
 
+            # toolset_name="$(toolset_for_abi_name $ABI_NAME)"
+            abi="$(abi_for_abi_name $ABI_NAME)"
+            address_model="$(address_model_for_abi_name $ABI_NAME)"
+            arch_for_abi="$(arch_for_abi_name $ABI_NAME)"
 
+            # used by scripts in ./bin/
+            export BFA_CLANG_TRIPLE_FOR_ABI="$(clang_triple_for_abi_name $ABI_NAME)"
+            export BFA_TOOL_TRIPLE_FOR_ABI="$(tool_triple_for_abi_name $ABI_NAME)"
+            export BFA_COMPILER_FLAGS_FOR_ABI="$(compiler_flags_for_abi_name $ABI_NAME)"
+            export BFA_LINKER_FLAGS_FOR_ABI="$(linker_flags_for_abi_name $ABI_NAME)"
+            
+            echo "------------------------------------------------------------"| tee -a ${LOG_FILE}
+            echo "Building boost for: $ABI_NAME $LINKAGE on host ${HOST_OS_TAG}" | tee -a ${LOG_FILE}
+        
+            # echo "address-model=$address_model "            | tee -a ${LOG_FILE}
+            # echo "architecture=$arch_for_abi "              | tee -a ${LOG_FILE}
+            # echo "abi=$abi "                                | tee -a ${LOG_FILE}   
+            # echo "link=$LINKAGE  "                          | tee -a ${LOG_FILE}  
+            # echo "--user-config=$USER_CONFIG_FILE"          | tee -a ${LOG_FILE}
+
+            # echo "WITH_LIBRARIES = $WITH_LIBRARIES"         | tee -a ${LOG_FILE} 
+            # echo "WITHOUT_LIBRARIES = $WITHOUT_LIBRARIES"   | tee -a ${LOG_FILE} 
+            # echo "ABI_SPECIFIC_FLAGS = $ABI_SPECIFIC_FLAGS"           | tee -a ${LOG_FILE}
+
+            # echo "--builddir=${BUILD_DIR_TMP}/$ABI_NAME "  | tee -a ${LOG_FILE}
+            # echo "--includedir=${INCLUDE_DIR}"              | tee -a ${LOG_FILE}
+            # echo "--libdir=${LIBS_DIR}/$ABI_NAME"           | tee -a ${LOG_FILE}
+
+            
+            # echo "BFA_CLANG_TRIPLE_FOR_ABI=$(clang_triple_for_abi_name $ABI_NAME)"      | tee -a ${LOG_FILE}
+            # echo "BFA_TOOL_TRIPLE_FOR_ABI=$(tool_triple_for_abi_name $ABI_NAME)"        | tee -a ${LOG_FILE}
+            # echo "BFA_COMPILER_FLAGS_FOR_ABI=$(compiler_flags_for_abi_name $ABI_NAME)"  | tee -a ${LOG_FILE}
+            # echo "BFA_LINKER_FLAGS_FOR_ABI=$(linker_flags_for_abi_name $ABI_NAME)"      | tee -a ${LOG_FILE}
+            
+            echo "------------------------------------------------------------"| tee -a ${LOG_FILE}
+            # toolset=clang-$toolset_name     \
+                                    
+            {
+                ./b2 -q -j$num_cores    \
+                    binary-format=elf \
+                    address-model=$address_model \
+                    architecture=$arch_for_abi \
+                    abi=$abi    \
+                    link=$LINKAGE                  \
+                    threading=multi              \
+                    target-os=android           \
+                    --user-config=$USER_CONFIG_FILE \
+                    --ignore-site-config         \
+                    --layout=system           \
+                    $WITH_LIBRARIES           \
+                    $WITHOUT_LIBRARIES           \
+                    $ABI_SPECIFIC_FLAGS \
+                    --build-dir=${BUILD_DIR_TMP}/$ABI_NAME/$LINKAGE \
+                    --includedir=${INCLUDE_DIR} \
+                    --libdir=${LIBS_DIR}/$ABI_NAME/$LINKAGE \
+                    install 2>&1                 \
+                    || { echo "Error: Failed to build boost for $ABI_NAME!";}
+            } | tee -a ${LOG_FILE}
+            
+        done # for ABI_NAME in $ABI_NAMES
+        
+    done # for LINKAGE in $LINKAGES
+}
 #------------------------------------------- 
-for LINKAGE in $LINKAGES; do
 
-    for ABI_NAME in $ABI_NAMES; do
-    
-
-        #-------------------
-        LOG_FILE=${BUILD_DIR}/build_${ABI_NAME}_${LINKAGE}.log
-        # clear any existing
-        if [ -f "$LOG_FILE" ]  
-        then 
-            rm "$LOG_FILE"
-        fi 
-
-        # ------------------
-        ABI_SPECIFIC_FLAGS=""
-        if [ "$ABI_NAME" = "x86" ]; then
-            # avoid possible memory leaks on x86
-            ABI_SPECIFIC_FLAGS+=" boost.stacktrace.from_exception=off"
-        fi
-
-        # ------------------
-
-        # toolset_name="$(toolset_for_abi_name $ABI_NAME)"
-        abi="$(abi_for_abi_name $ABI_NAME)"
-        address_model="$(address_model_for_abi_name $ABI_NAME)"
-        arch_for_abi="$(arch_for_abi_name $ABI_NAME)"
-
-        # used by scripts in ./bin/
-        export BFA_CLANG_TRIPLE_FOR_ABI="$(clang_triple_for_abi_name $ABI_NAME)"
-        export BFA_TOOL_TRIPLE_FOR_ABI="$(tool_triple_for_abi_name $ABI_NAME)"
-        export BFA_COMPILER_FLAGS_FOR_ABI="$(compiler_flags_for_abi_name $ABI_NAME)"
-        export BFA_LINKER_FLAGS_FOR_ABI="$(linker_flags_for_abi_name $ABI_NAME)"
-        
-        echo "------------------------------------------------------------"| tee -a ${LOG_FILE}
-        echo "Building boost for: $ABI_NAME $LINKAGE on host ${HOST_OS_TAG}" | tee -a ${LOG_FILE}
-    
-        # echo "address-model=$address_model "            | tee -a ${LOG_FILE}
-        # echo "architecture=$arch_for_abi "              | tee -a ${LOG_FILE}
-        # echo "abi=$abi "                                | tee -a ${LOG_FILE}   
-        # echo "link=$LINKAGE  "                          | tee -a ${LOG_FILE}  
-        # echo "--user-config=$USER_CONFIG_FILE"          | tee -a ${LOG_FILE}
-
-        # echo "WITH_LIBRARIES = $WITH_LIBRARIES"         | tee -a ${LOG_FILE} 
-        # echo "WITHOUT_LIBRARIES = $WITHOUT_LIBRARIES"   | tee -a ${LOG_FILE} 
-        # echo "ABI_SPECIFIC_FLAGS = $ABI_SPECIFIC_FLAGS"           | tee -a ${LOG_FILE}
-
-        # echo "--builddir=${BUILD_DIR_TMP}/$ABI_NAME "  | tee -a ${LOG_FILE}
-        # echo "--includedir=${INCLUDE_DIR}"              | tee -a ${LOG_FILE}
-        # echo "--libdir=${LIBS_DIR}/$ABI_NAME"           | tee -a ${LOG_FILE}
-
-        
-        # echo "BFA_CLANG_TRIPLE_FOR_ABI=$(clang_triple_for_abi_name $ABI_NAME)"      | tee -a ${LOG_FILE}
-        # echo "BFA_TOOL_TRIPLE_FOR_ABI=$(tool_triple_for_abi_name $ABI_NAME)"        | tee -a ${LOG_FILE}
-        # echo "BFA_COMPILER_FLAGS_FOR_ABI=$(compiler_flags_for_abi_name $ABI_NAME)"  | tee -a ${LOG_FILE}
-        # echo "BFA_LINKER_FLAGS_FOR_ABI=$(linker_flags_for_abi_name $ABI_NAME)"      | tee -a ${LOG_FILE}
-        
-        echo "------------------------------------------------------------"| tee -a ${LOG_FILE}
-        # toolset=clang-$toolset_name     \
-                                   
-        {
-            ./b2 -q -j$num_cores    \
-                binary-format=elf \
-                address-model=$address_model \
-                architecture=$arch_for_abi \
-                abi=$abi    \
-                link=$LINKAGE                  \
-                threading=multi              \
-                target-os=android           \
-                --user-config=$USER_CONFIG_FILE \
-                --ignore-site-config         \
-                --layout=system           \
-                $WITH_LIBRARIES           \
-                $WITHOUT_LIBRARIES           \
-                $ABI_SPECIFIC_FLAGS \
-                --build-dir=${BUILD_DIR_TMP}/$ABI_NAME/$LINKAGE \
-                --includedir=${INCLUDE_DIR} \
-                --libdir=${LIBS_DIR}/$ABI_NAME/$LINKAGE \
-                install 2>&1                 \
-                || { echo "Error: Failed to build boost for $ABI_NAME!";}
-        } | tee -a ${LOG_FILE}
-        
-    done # for ABI_NAME in $ABI_NAMES
-    
-done # for LINKAGE in $LINKAGES
-
-#------------------------------------------- 
-
+# do_build 
 
 persist_ndk_version
 
-fix_version_suffices
+# fix_version_suffices
 
 echo "built boost to "  ${PREFIX_DIR}
 
