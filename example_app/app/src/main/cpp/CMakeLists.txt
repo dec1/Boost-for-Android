@@ -34,4 +34,31 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         android
-        log)
+        log
+
+        boost_system
+        boost_chrono
+)
+
+
+#-----------------------------------------
+add_library (boost_system SHARED IMPORTED)
+
+set_target_properties( boost_system PROPERTIES IMPORTED_LOCATION
+${MY_BOOST_LIBS_DIR}/${ANDROID_ABI}/shared/libboost_system.so
+)
+#-----------------------------------------
+add_library( boost_chrono SHARED IMPORTED)
+
+set_target_properties(boost_chrono PROPERTIES IMPORTED_LOCATION
+${MY_BOOST_LIBS_DIR}/${ANDROID_ABI}/shared/libboost_chrono.so
+)
+#-----------------------------------------
+
+include_directories( ${MY_BOOST_INC_DIR}
+)
+
+#-----------------------------------------
+find_library (log-lib log)
+
+#-----------------------------------------
