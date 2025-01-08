@@ -44,10 +44,7 @@ This way you need not need to install any build tools or other prerequisites, an
  If the build succeeded, then the boost binaries should now be in  **`./build/install`**
 
 _Warning_: If you download the ndk directly do *not* extract it with [Ark](https://apps.kde.org/de/ark). It produces a corrupt extraction, that results in strange compiler errors. (use unzip instead)
-```
-> cd boost_for_android
-> ./do.sh
-```
+
 
 
 
@@ -66,9 +63,9 @@ To use the test app make sure to adjust the values in the [local.properties](./e
 Many of the boost libraries (eg. *algorithm*) can be used as "header only" ie do not require compilation . So you may get away with not building boost if you only
 want to use these. To see which of the libraries do require building you can switch to the dir where you extracted the boost download and call:
 
-```
-> ./bootstrap.sh --show-libraries 
-```
+
+`./bootstrap.sh --show-libraries `
+
 
 which for example with boost 1.87.0 produces the output:
 
