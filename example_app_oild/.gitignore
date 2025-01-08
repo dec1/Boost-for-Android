@@ -1,0 +1,10 @@
+*.iml
+.gradle
+# /local.properties # usually shouldnt include this in a project, but makes it easier to get up an running
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild

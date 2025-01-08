@@ -8,10 +8,10 @@ def my_boost_dir_inc  = my_boost_dir + "/include"
 // println '.... my message : boost_build_dir = ' + boost_build_dir
 
 android {
-    compileSdkVersion 33
     defaultConfig {
         applicationId "com.example.declan.myapplication"
-        minSdkVersion 16
+        namespace "com.example.declan.myapplication"
+        minSdkVersion 21
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
@@ -78,6 +78,8 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
+    ndkVersion '27.2.12479018'
+    buildToolsVersion '35.0.0'
 
 
 }
