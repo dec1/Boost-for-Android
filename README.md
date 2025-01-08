@@ -31,6 +31,7 @@ See [docker_readme](./docker/docker_readme.md) for instructions.
     - MacOS: XCode ( Command Line Tools))
     - NDK (eg in Android studio or downloaded separately)
 - Download the [boost source](https://www.boost.org) and [extract here](./boost/down/readme.md) 
+    - Boost doesn't always build out of the box, so you may need to patch the source code to make necessary fixes - see [patch](./boost/patch/readme.md) 
 
 
 
@@ -43,7 +44,7 @@ See [docker_readme](./docker/docker_readme.md) for instructions.
 
  If the build succeeded, then the boost binaries should now be in  **`./build/install`**
 
-Warning: If you download the ndk directly do *not* extract it with [Ark](https://apps.kde.org/de/ark). It produces a corrupt extraction, that results in strange compiler errors. (use unzip instead)
+_Warning_: If you download the ndk directly do *not* extract it with [Ark](https://apps.kde.org/de/ark). It produces a corrupt extraction, that results in strange compiler errors. (use unzip instead)
 ```
 > cd boost_for_android
 > ./do.sh
