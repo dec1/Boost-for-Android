@@ -1,3 +1,4 @@
+[![CI](https://github.com/dec1/Boost-for-Android/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/dec1/Boost-for-Android/actions/workflows/ci.yaml)
 
 Build and/or simply download the Boost C++ Libraries for the Android platform, with Google's NDK.
 
