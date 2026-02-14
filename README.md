@@ -1,6 +1,6 @@
-[![CI](https://github.com/dec1/Boost-for-Android/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/dec1/Boost-for-Android/actions/workflows/ci.yaml)
-
 Build and/or simply download the Boost C++ Libraries for the Android platform, with Google's NDK.
+
+[![CI](https://github.com/dec1/Boost-for-Android/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/dec1/Boost-for-Android/actions/workflows/ci.yaml)
 
 The [Boost C++ Libraries](http://www.boost.org/), are possibly *the* most popular and generally useful c++ libraries. It would be nice to be able to use them when developing (native c++ or hybrid java/c++ with Google's [NDK](https://developer.android.com/ndk/)) apps and/or libraries for Android devices.
 The Boost libraries are written to be cross platform, and are available in source code format. However, building the libraries for a given target platform like Android can be very difficult and time consuming. (In particular, building **arm64_v8a** shared libraries that an application can actually load). This project aims to lower the barrier by offering a simple customizable build script you can use to build Boost for Android (abstracting away all the details of the underlying custom boost build system, and target architecture differences), and even providing standard prebuilt binaries to get you started fast.
