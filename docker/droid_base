@@ -1,4 +1,4 @@
-# Version: 1.4
+# Version: 1.5
 
 # Dockerfile with all tools, libraries and sources for building boost for android, interactively
 # https://github.com/dec1/Boost-for-Android
@@ -11,7 +11,7 @@
 
 
 
-FROM amd64/ubuntu:22.04
+FROM amd64/ubuntu:26.04
 #---------------------- 
 
 
@@ -27,7 +27,6 @@ RUN apt-get -y install wget
 # for unzipping downloaded android archives
 RUN apt-get -y install zip 
 
-RUN apt-get -y install openjdk-17-jdk
 RUN apt-get -y install lib32z1
 
 
@@ -35,7 +34,7 @@ RUN apt-get -y install lib32z1
 RUN dpkg --add-architecture i386
 RUN apt-get update
 RUN apt-get -y dist-upgrade
-RUN apt-get install -y  libc6:i386 libncurses5:i386 libstdc++6:i386 libbz2-1.0:i386
+RUN apt-get install -y  libc6:i386 libncurses6:i386 libstdc++6:i386 libbz2-1.0:i386
 
 
 # need c compiler to set up create boost build system (before building boost with it and android toolchain)

@@ -4,7 +4,8 @@
 /build_out.txt
 /src/
 /prebuilt/
-/down/
+/down/boost/1.92.0
+/down/ndk/r30
 
 /.gradle/
 /boost/down/1.87.0
