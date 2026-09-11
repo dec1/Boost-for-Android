@@ -411,7 +411,7 @@ do_build()
 }
 #------------------------------------------- 
 
-# do_build 
+do_build 
 
 persist_ndk_version
 
