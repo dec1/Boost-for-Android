@@ -24,9 +24,11 @@ mkdir -p ${PREFIX_DIR}
 LIBS_DIR=${PREFIX_DIR}/libs
 INCLUDE_DIR=${PREFIX_DIR}/include
 
-WITHOUT_LIBRARIES="--without-python"
-WITHOUT_LIBRARIES+=" --without-process"     # avoid:  "libs/process/src/shell.cpp:23:10: fatal error: 'wordexp.h' file not found" 
-                                            # 'process' control very restriced in  android sandboxes anyways
+
+WITHOUT_LIBRARIES="--without-python"        # Requires Python dev headers and embedding runtime not present in Android NDK
+WITHOUT_LIBRARIES+=" --without-process"     # Requires POSIX wordexp.h, which is absent in Android Bionic libc
+WITHOUT_LIBRARIES+=" --without-mpi"         # Requires a desktop MPI cluster implementation (OpenMPI/MPICH) not available for Android
+WITHOUT_LIBRARIES+=" --without-graph_parallel" # Depends on MPI for parallel graph processing; unavailable on Android
 
 # only build these libs
 # WITH_LIBRARIES="--with-chrono --with-system"
