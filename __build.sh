@@ -402,6 +402,7 @@ do_build()
                     $ABI_SPECIFIC_FLAGS \
                     --build-dir=${BUILD_DIR_TMP}/$ABI_NAME/$LINKAGE \
                     --prefix=${PREFIX_DIR} \
+                    --datadir=${PREFIX_DIR}/share \
                     --includedir=${INCLUDE_DIR} \
                     --libdir=${LIBS_DIR}/$ABI_NAME/$LINKAGE \
                     install 2>&1                 \
