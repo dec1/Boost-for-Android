@@ -36,7 +36,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log
 
-        boost_system
         boost_chrono
 )
 
