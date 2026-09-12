@@ -25,6 +25,8 @@ plugins {
 android {
     namespace = "com.example.boost_test"
     compileSdk = 34
+    ndkVersion = "30.0.16248370"
+    ndkPath="/home/declan/Documents/zone/high/eigene/dev/boost/Boost-for-Android/down/ndk/r30"
 
     defaultConfig {
         applicationId = "com.example.boost_test"
