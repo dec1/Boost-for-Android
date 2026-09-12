@@ -65,108 +65,49 @@ Many of the boost libraries (eg. *algorithm*) can be used as "header only" ie do
 want to use these. To see which of the libraries do require building you can switch to the dir where you extracted the boost download and call:
 
 
-`./bootstrap.sh --show-libraries `
+`./b2 --show-libraries`
 
 
-which for example with boost 1.87.0 produces the output:
+which for example with boost 1.92.0 produces the output:
 
 ```
-The following Boost libraries have portions that require a separate build
-and installation step. Any library not listed here can be used by including
-the headers only.
-
-The Boost libraries requiring separate building and installation are:
+The following libraries require building:
+    - atomic
+    - charconv
+    - chrono
+    - cobalt
+    - container
+    - context
     - contract
+    - coroutine
     - date_time
     - exception
+    - fiber
+    - filesystem
     - graph
     - graph_parallel
     - headers
+    - iostreams
+    - json
     - locale
     - log
+    - math
+    - mpi
     - nowide
+    - process
     - program_options
+    - python
+    - random
     - regex
     - serialization
+    - stacktrace
+    - system
     - test
     - thread
-    - type_erasure
-    - winapi
-    - wave
-    - variant2
-    - variant
-    - uuid
-    - url
-    - unordered
-    - type_index
-    - tuple
     - timer
-    - throw_exception
-    - system
-    - stl_interfaces
-    - stacktrace
-    - smart_ptr
-    - signals2
-    - scope
-    - redis
-    - ratio
-    - random
-    - python
-    - process
-    - predef
-    - poly_collection
-    - pfr
-    - parameter
-    - outcome
-    - optional
-    - mysql
-    - multi_index
-    - msm
-    - mpi
-    - mp11
-    - move
-    - math
-    - lockfree
-    - lexical_cast
-    - lambda2
-    - json
-    - iterator
-    - iostreams
-    - intrusive
-    - interprocess
-    - integer
-    - heap
-    - hana
-    - geometry
-    - function_types
-    - function
-    - flyweight
-    - filesystem
-    - fiber
-    - endian
-    - dll
-    - detail
-    - describe
-    - crc
-    - coroutine2
-    - coroutine
-    - core
-    - conversion
-    - context
-    - container_hash
-    - container
-    - compat
-    - cobalt
-    - chrono
-    - charconv
-    - bind
-    - bimap
-    - beast
-    - atomic
-    - assert
-    - asio
-    - any
-
+    - type_erasure
+    - url
+    - wave
 ```
 
 
