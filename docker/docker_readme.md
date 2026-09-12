@@ -43,9 +43,12 @@ _Note_:
 
 `> docker run -v $(pwd):/home/bfa -it --entrypoint=/bin/bash --user $(id -u):$(id -g) --workdir /home/bfa --name my_ctr_droid_base my_img_droid_base`
 
-If a container with this name already exists you must delete it first with
+If a container with this name already exists you must first delete it first with
 
-`> docker rm my_ctr_droid_base`
+- `> docker rm my_ctr_droid_base`
+
+Remove any existing build directory (from any previous build) 
+- `> sudo rm -rf build`
 
 
 ## (5) Build boost inside docker container

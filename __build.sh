@@ -401,6 +401,7 @@ do_build()
                     $WITHOUT_LIBRARIES           \
                     $ABI_SPECIFIC_FLAGS \
                     --build-dir=${BUILD_DIR_TMP}/$ABI_NAME/$LINKAGE \
+                    --prefix=${PREFIX_DIR} \
                     --includedir=${INCLUDE_DIR} \
                     --libdir=${LIBS_DIR}/$ABI_NAME/$LINKAGE \
                     install 2>&1                 \
@@ -423,6 +424,3 @@ echo "built boost to "  ${PREFIX_DIR}
 
 
 export PATH=$SAVED_PATH
-
-
-
