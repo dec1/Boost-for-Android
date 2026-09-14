@@ -79,7 +79,7 @@ jobs:
       - name: Check for the expected directory structure
         run: |
           # Expected root directory inside the extracted folder
-          expected_dir="extracted/${{ env.tag_name }}"
+          expected_dir="extracted/${{ env.tag_name }}/install"
           echo "Checking for directory: $expected_dir"
           
           # Check if the extracted root directory exists
