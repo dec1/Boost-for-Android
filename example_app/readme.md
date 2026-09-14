@@ -2,4 +2,6 @@ If you build and run this example app it should show the date and time as calcul
 Make sure to adjust the values in the [local.properties](./local.properties) file.
 
 
-![Image description](screenshot.png)
+<a href="screenshot.png">
+  <img src="screenshot.png" width="450" border="1" alt="Example App Screenshot" title="Click to view full size">
+</a>
