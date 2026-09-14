@@ -8,7 +8,11 @@ on:
         required: false
         default: ''
   release:
-    types: [created, published]
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check-release:
@@ -99,25 +103,3 @@ jobs:
           done
 
           echo "All specified directories exist."
-
-                  # extracted/{release_name}
-        # include
-        #   boost/
-        # libs
-        #   arm64-v8a/
-        #   armeabi-v7a/
-        #   x86/
-        #   x86_64/
-
-
-
-      # - name: Check for the specific file
-      #   run: |
-      #     # Update this path to the expected location of your file within the extracted directory
-      #     if [ -f "extracted/path/to/your/file" ]; then
-      #       echo "File exists."
-      #     else
-      #       echo "File does not exist."
-      #       exit 1
-      #     fi
-
